@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- ✏️ EDIT: browser tab title -->
+<title>Deep Graph Models – ICVGIP 2026 Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ================= COLORS — change these to re-theme the whole site ================= */
+  :root {
+    --banner: #1f3a5f;        /* header background */
+    --banner-ink: #ffffff;    /* header text */
+    --accent: #2a7f86;        /* links, active tab, role tags */
+    --bg: #ffffff;            /* page background */
+    --ink: #1d2430;           /* body text */
+    --muted: #5b6573;         /* secondary text */
+    --line: #dde2e8;          /* dividers */
+    --soft: #f3f6f8;          /* photo placeholder / table rows */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12171e; --ink: #e6eaf0; --muted: #9aa5b3; --line: #2a333f; --soft: #1b222c;
+      --accent: #5cc2c9;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12171e; --ink: #e6eaf0; --muted: #9aa5b3; --line: #2a333f; --soft: #1b222c; --accent: #5cc2c9;
+  }
+
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 17px/1.65 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  img { max-width: 100%; }
+
+  /* ================= HEADER + NAV ================= */
+  header.banner {
+    background: var(--banner); color: var(--banner-ink);
+    position: relative; overflow: hidden;
+  }
+  /* faint node-and-edge pattern in the banner; delete the ::before block to remove */
+  header.banner::before {
+    content: ""; position: absolute; inset: 0; opacity: .14; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140'%3E%3Cg stroke='white' stroke-width='1' fill='none'%3E%3Cpath d='M20 30 L90 70 L170 25 M90 70 L120 125 L200 110 M20 30 L40 115 L120 125'/%3E%3C/g%3E%3Cg fill='white'%3E%3Ccircle cx='20' cy='30' r='3.5'/%3E%3Ccircle cx='90' cy='70' r='3.5'/%3E%3Ccircle cx='170' cy='25' r='3.5'/%3E%3Ccircle cx='120' cy='125' r='3.5'/%3E%3Ccircle cx='200' cy='110' r='3.5'/%3E%3Ccircle cx='40' cy='115' r='3.5'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 1.25rem; position: relative; }
+  .topbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: .5rem 1.5rem; padding: 1rem 0;
+  }
+  .site-name { color: inherit; text-decoration: none; font-weight: 600; font-size: 1.05rem; }
+  nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem; }
+  nav a {
+    display: block; padding: .4rem .8rem; color: var(--banner-ink); text-decoration: none;
+    border-bottom: 2px solid transparent; font-size: .95rem; opacity: .85;
+  }
+  nav a:hover { opacity: 1; }
+  nav a[aria-current="page"] { opacity: 1; border-bottom-color: var(--banner-ink); }
+  .hero { padding: 3.5rem 0 4rem; }
+  .hero h1 {
+    font-family: "Newsreader", Georgia, serif; font-weight: 600;
+    font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.08; margin: 0 0 .75rem; max-width: 18ch;
+  }
+  .hero p { margin: 0; font-size: 1.1rem; opacity: .9; max-width: 60ch; }
+
+  /* ================= PAGE CONTENT ================= */
+  main { padding: 3rem 0 4rem; }
+  .page[hidden] { display: none; }
+  h2 {
+    font-family: "Newsreader", Georgia, serif; font-weight: 600;
+    font-size: 2.1rem; line-height: 1.2; margin: 0 0 1.5rem;
+  }
+  h3 { font-size: 1.15rem; margin: 2rem 0 .5rem; }
+  .prose p { max-width: 68ch; }
+
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.5rem; margin: 1.5rem 0; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; }
+
+  /* Program table */
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; }
+  th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; font-size: .9rem; color: var(--muted); }
+  td.time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tr.break td { background: var(--soft); color: var(--muted); }
+
+  tr.part td { font-weight: 600; padding-top: 1.5rem; border-bottom: 2px solid var(--ink); }
+  td .desc { display: block; color: var(--muted); font-size: .92rem; margin-top: .3rem; max-width: 60ch; }
+  .lead-note { color: var(--muted); margin: -.75rem 0 1rem; }
+  .refs { padding-left: 1.6rem; max-width: 72ch; }
+  .refs li { margin-bottom: .9rem; padding-left: .3rem; }
+  .refs li::marker { content: "[" counter(list-item) "]  "; color: var(--muted); }
+
+  /* Organizer entries */
+  .person {
+    display: grid; grid-template-columns: 140px 1fr; gap: 1.5rem;
+    padding: 2rem 0; border-top: 1px solid var(--line);
+  }
+  .person:first-of-type { border-top: 0; padding-top: 0; }
+  .photo {
+    width: 140px; height: 140px; border-radius: 50%; object-fit: cover; background: var(--soft);
+    display: grid; place-items: center; font-family: "Newsreader", Georgia, serif; font-size: 2.4rem; color: var(--muted);
+  }
+  .person h3 { margin: 0; font-size: 1.25rem; }
+  .affil { margin: .15rem 0 .5rem; color: var(--muted); }
+  .role {
+    display: inline-block; font-size: .8rem; font-weight: 600; color: var(--accent);
+    border: 1px solid currentColor; border-radius: 999px; padding: .05rem .6rem; margin-bottom: .75rem;
+  }
+  .person p.bio { margin: 0; max-width: 68ch; }
+
+  @media (max-width: 600px) {
+    .person { grid-template-columns: 1fr; gap: 1rem; }
+    .photo { width: 110px; height: 110px; font-size: 2rem; }
+    .facts { grid-template-columns: 1fr; gap: 0; }
+    .facts dd { margin-bottom: .6rem; }
+  }
+
+  footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2rem; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<header class="banner">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="site-name" href="#home">ICVGIP 2026 Tutorial</a>
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#program">Program</a></li>
+          <li><a href="#practices">Practices</a></li>
+          <li><a href="#organizers">Organizers</a></li>
+          <li><a href="#references">References</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="hero">
+      <h1>Deep Graph Models for Computer Vision and Pattern Recognition</h1>
+      <!-- ✏️ EDIT: add date and venue once confirmed -->
+      <p>A 3-hour tutorial at ICVGIP 2026 · [Date] · [Venue]</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- ============================ HOME ============================ -->
+    <section class="page prose" id="home">
+      <h2>Abstract</h2>
+      <p style="text-align:justify;">In this tutorial we will show how graph based models can be integrated with deep learning algorithms to  solve a wide variety of problems in Computer Vision and Pattern Recognition (CVPR). The integration itself can be imparted in different ways. For example, a minimum cut or a random walk on a graph can follow a deep model like UNet or GoogleNet. Alternatively, loss function appearing in a deep network can be improved through regularizers, drawing inspiration from the structure of the energy function in a graph cut. It is also a popular practice to apply deep learning on graph structured data in the form of a Graph Convolution Network (GCN), which falls under the broad umbrella of Graph Neural Network (GNN). Example problems have been carefully selected from two different domains, namely, multimedia (e.g. action recognition and action anticipation in unimodal and multimodal egocentric video) and biomedical image analysis (e.g. segmentation of brain tumor in MRI and brain cells in microscopic data) to demonstrate the application of these different deep graph models. With comprehensive experiments performance benefits from using deep graph models over state-of-the-art competitors, as well as their advantages over deep models or graph models used in isolation, will be evident. While the lectures would provide rich theoretical foundations and rationale, the demos would impart valuable knowhow.    </p>
+
+      <dl class="facts">
+        <dt>Conference</dt><dd>ICVGIP 2026</dd>
+        <dt>Date</dt><dd>[To be announced]</dd>
+        <dt>Venue</dt><dd>[To be announced]</dd>
+        <dt>Duration</dt><dd>3 hours: 1 hr 40 min lecture, 50 min demo, 20 min discussion, 10 min break</dd>
+        <dt>Presenters</dt><dd><a href="#organizers">Ananda S. Chowdhury, Abhimanyu Sahu, Arijit De</a></dd>
+      </dl>
+
+      <h3>Goals</h3>
+      <ol>
+        <li>To show a synergistic combination of deep learning and graph-based methods as an innovative computational model in CVPR.</li>
+        <li>To discuss various forms of integration of deep and graph models, with strong theoretical foundations and clear rationale behind the integration.</li>
+        <li>To present multiple applications in two different domains, multimedia and biomedical image analysis, to illustrate the utility of deep graph models.</li>
+      </ol>
+
+      <h3>Learning outcomes</h3>
+      <ol>
+        <li>Exposure to a new computational paradigm in CVPR.</li>
+        <li>Theoretical understanding of various deep graph models.</li>
+        <li>Knowing how to apply different models for practical problem solving.</li>
+      </ol>
+    </section>
+
+    <!-- ============================ PROGRAM ============================ -->
+    <section class="page" id="program" hidden>
+      <h2>Program</h2>
+      <p class="lead-note">Total duration 3 hours. <!-- ✏️ EDIT: replace durations with clock times once the slot is fixed --></p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Duration</th><th>Session</th><th>Speaker</th></tr></thead>
+          <tbody>
+            <tr class="part"><td colspan="3">Part I: Deep Graph Models in Multimedia (1 hr 25 min)</td></tr>
+            <tr><td class="time">10 min</td><td><strong>IA. Introduction to Deep Graph Models</strong><span class="desc">Different deep graph models, highlighting various forms of integration, with diverse applications in multimedia [1] and biomedical image analysis.</span></td><td>Ananda S. Chowdhury</td></tr>
+            <tr><td class="time">15 min</td><td><strong>IB. Action Recognition in Egocentric Video using Deep Learning and Random Walks on Sparse Graphs</strong><span class="desc">How random walks on a sparse video representation graph following deep learning address recognition and localization of single and multiple actions in egocentric video [2]. The superpixel-based framework facilitates accurate detection and precise localization of actions within video frames.</span></td><td>Ananda S. Chowdhury</td></tr>
+            <tr><td class="time">25 min</td><td><strong>IC. Graph-Based Deep Learning Framework for Multimodal Action Recognition and Anticipation in Egocentric Video</strong><span class="desc">Multimodal egocentric action recognition integrating deep learning and graph-based modeling to exploit complementary information from RGB, motion and depth modalities [3]; and an end-to-end framework combining multimodal fusion, graph-based relational reasoning and transformer-based temporal modeling for egocentric action anticipation [4].</span></td><td>Abhimanyu Sahu</td></tr>
+            <tr><td class="time">25 min</td><td><strong>ID. Demo / Practices</strong><span class="desc">Execution of the deep graph models for multimedia discussed in IB and IC. <a href="#practices">See Practices</a>.</span></td><td>Abhimanyu Sahu</td></tr>
+            <tr><td class="time">10 min</td><td><strong>IE. Discussion</strong></td><td>All</td></tr>
+            <tr class="break"><td class="time">10 min</td><td>Break</td><td></td></tr>
+            <tr class="part"><td colspan="3">Part II: Deep Graph Models in Biomedical Image Analysis (1 hr 25 min)</td></tr>
+            <tr><td class="time">20 min</td><td><strong>IIA. Segmentation in MRI Data using Deep Graph Cuts</strong><span class="desc">Integrating a deep network with graph cuts to exploit both learned volumetric representations and the spatial regularization of graph-based optimization. Examples: brain tumor segmentation [5] with two-class graph cuts, and hippocampus subfield segmentation [6] with multi-class graph cuts.</span></td><td>Arijit De</td></tr>
+            <tr><td class="time">20 min</td><td><strong>IIB. Segmentation in Microscopy Data using GCN and Graph Cut like Loss</strong><span class="desc">A dynamic GCN for segmentation of subcellular structures from microscopic data [7], and a graph cut like loss that improves cell instance segmentation in histopathology [8].</span></td><td>Ananda S. Chowdhury</td></tr>
+            <tr><td class="time">25 min</td><td><strong>IIC. Demo / Practices</strong><span class="desc">Execution of the deep graph models for biomedical image analysis discussed in IIA and IIB. <a href="#practices">See Practices</a>.</span></td><td>Arijit De</td></tr>
+            <tr><td class="time">10 min</td><td><strong>IID. Concluding Remarks</strong><span class="desc">Summary of findings and directions for future research.</span></td><td>Ananda S. Chowdhury</td></tr>
+            <tr><td class="time">10 min</td><td><strong>IIE. Discussion</strong></td><td>All</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ PRACTICES ============================ -->
+    <section class="page prose" id="practices" hidden>
+      <h2>Practices</h2>
+      <p>The tutorial includes two hands-on demo sessions of 25 minutes each, one per part.</p>
+
+      <h3>Demo 1: Deep graph models in multimedia</h3>
+      <p>Presented by Abhimanyu Sahu. Demonstrates execution of the deep graph models for egocentric action recognition and anticipation covered in sessions IB and IC.</p>
+      <!-- ✏️ EDIT: replace # with real links, or delete links you don't need -->
+      <p><a href="https://github.com/pawanesh-mnnit/EgoHANG">Code (EgoHANG)</a> · <a href="https://pawanesh-mnnit.github.io/egohang_icpr/">EgoHAnG Webpage</a> · <a href="https://github.com/pawaneshmnnit/tutorial/tree/main/deft_dpt">Code (DEFT-DPT)</a> · <a href="https://pawanesh-mnnit.github.io/deft-dpt/">DEFT-DPT Webpage</a></p>
+
+      <h3>Demo 2: Deep graph models in biomedical image analysis</h3>
+      <p>Presented by Arijit De. Demonstrates execution of the deep graph models for MRI and microscopy segmentation covered in sessions IIA and IIB.</p>
+      <p><a href="#">Code</a> · <a href="#">Notebook</a> · <a href="#">Slides</a></p>
+
+      <h3>Setup</h3>
+      <p>[Add software requirements, datasets, or installation steps for attendees here.]</p>
+    </section>
+
+    <!-- ============================ ORGANIZERS ============================ -->
+    <section class="page" id="organizers" hidden>
+      <h2>Organizers</h2>
+
+      <!-- Photo: replace <div class="photo">…</div> with <img class="photo" src="photo.jpg" alt="Name"> -->
+      <article class="person">
+        <a href="https://sites.google.com/site/anandachowdhury/" style="color:black;"><div class="photo" aria-hidden="true"><img src="anand_sir.jpg"/></div></a>
+        <div>
+          <h3>Prof. Ananda S. Chowdhury</h3>
+          <p class="affil">Electronics &amp; Telecommunication Engineering, Jadavpur University, Kolkata, India</p>
+          <span class="role">Presenter</span>
+          <p class="bio" style="text-align:justify;">Ananda S. Chowdhury is a Professor and former Head in the department of Electronics and Telecommunication Engineering at Jadavpur University, Kolkata, India, where he leads the Imaging, Vision and Pattern Recognition group. He earned his Ph.D. in Computer Science from The University of Georgia, USA in July 2007. He then worked as a post-doctoral fellow in the department of Radiology and Imaging Sciences at National Institutes of Health, USA during the period August 2007 to December 2008. His research interests span Computer Vision, Pattern Recognition, Biomedical Image/Signal Processing, and Multimedia Analysis. Dr. Chowdhury has published more than one hundred papers in leading international journals and conferences in addition to two monographs, from Morgan Kaufmann, Elsevier, and ACVR, Springer. He is an IAPR TC-member of Graph based Representations in Pattern Recognition, a life member of IUPRAI, and a Fellow of the West Bengal Academy of Science and Technology. He currently serves IEEE Transactions on Image Processing as a Senior Area Editor, and Pattern Recognition Letters as an Area Editor. He is a Distinguished Visitor of the IEEE Computer Society. His Erdős Number is 2.</p>
+        </div>
+      </article>
+
+      <article class="person">
+        <a href="https://mnnit.ac.in/profile/previewt.php?id=1831" style="color:black;"><div class="photo" aria-hidden="true"><img src="abh_sir.jpeg"/></div></a>
+        <div>
+          <h3>Dr. Abhimanyu Sahu</h3>
+          <p class="affil">Computer Science &amp; Engineering, Motilal Nehru National Institute of Technology (MNNIT), Allahabad, India</p>
+          <span class="role">Presenter</span>
+          <p class="bio" style="text-align:justify;">Abhimanyu Sahu received the Ph.D. in Computer Engineering from Jadavpur University, Kolkata, India, in October 2021. He is currently working as an Assistant Professor with the Department of Computer Science &amp; Engineering, Motilal Nehru National Institute of Technology (MNNIT), Allahabad, Uttar Pradesh, India. He has authored or co-authored more than twenty papers in leading international journals and conferences, as well as a monograph in the Morgan Kaufmann Elsevier Book Series. His research interests include computer vision, pattern recognition, multimedia analysis, egocentric video, and deep learning. He is also a life member of the Indian Society for Technical Education (ISTE) and the International Association for Pattern Recognition (IAPR).</p>
+        </div>
+      </article>
+
+      <article class="person">
+        <a href="https://scholar.google.com/citations?user=mCaigGsAAAAJ&hl=en" style="color:black;"><div class="photo" aria-hidden="true"><img src="arijit_de.jpg"/></div>
+        <div></a>
+          <h3>Dr. Arijit De</h3>
+          <p class="affil">Machine Learning Engineer, mVizn Pte. Ltd., Singapore</p>
+          <span class="role">Presenter</span>
+          <p class="bio" style="text-align:justify;">Arijit De received his Ph.D. in Computer Science from Jadavpur University, Kolkata, India, and has more than six years of experience in data science, machine learning, and artificial intelligence across academic research and industry. He is currently working as a Machine Learning Engineer at mVizn Pte. Ltd., and has previously worked with Mercedes-Benz Research and Development India and Tata Consultancy Services. His research and professional work focuses on deep learning, computer vision, medical image analysis, and 3D image processing, with particular emphasis on brain imaging and neurological disorders. He has authored and co-authored research papers in leading international conferences and journals, including ICPR, ICIP, EMBC, and IEEE Transactions on Computational Biology and Bioinformatics. His research interests include medical image segmentation, brain tumor and hippocampal analysis, multimodal medical imaging, computer vision, deep learning, and artificial intelligence.</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============================ REFERENCES ============================ -->
+    <section class="page" id="references" hidden>
+      <h2>References</h2>
+      <ol class="refs">
+        <li>A.S. Chowdhury and A. Sahu, <em>Graph Based Multimedia Analysis</em>, Morgan Kaufmann, Elsevier, Cambridge, MA, USA, ISBN: 978-0-443-21495-0 (2024).</li>
+        <li>A. Sahu and A.S. Chowdhury, Together Recognizing, Localizing and Summarizing Actions in Egocentric Videos, <em>IEEE Trans. Image Process. (TIP)</em> 30 (2021), 4330–4340.</li>
+        <li>P.K. Vishwakarma, D.K. Singh, and A. Sahu, DEFT-DPT: A Lightweight Multimodal Framework for Egocentric Video Action Recognition, <em>IEEE Trans. Circuits Syst. Video Technol. (TCSVT)</em>, 2026 (in press).</li>
+        <li>P.K. Viswakarma, A.S. Chowdhury, A. Sahu, EgoHAnG: Graph-Enhanced Horizon Aware Egocentric Action Anticipation, <em>Proc. Twenty-Eighth International Conference on Pattern Recognition (ICPR)</em>; M. De Marsico et al. (eds.), Springer LNCS Vol. 16820, Lyon, France (2026), 65–80.</li>
+        <li>A. De, M. Tewari, E. Grisan, A.S. Chowdhury, A Deep Graph Cut Model for 3D Brain Tumor Segmentation, <em>Proc. Forty-fourth International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC)</em>; Glasgow, Scotland, UK (2022), 2105–2109.</li>
+        <li>A. De and A.S. Chowdhury, Shape induced Multi-Class Deep Graph Cut for Hippocampus Subfield Segmentation, <em>Proc. Twenty-Seventh International Conference on Pattern Recognition (ICPR)</em>; A. Antonacopoulos et al. (eds.), Springer LNCS Vol. 15313, Kolkata, India (2024), 242–257.</li>
+        <li>A.S. Chowdhury, S. Majhi, S. Jadhav, K. Agarwal, and D.K. Prasad, Label Modulated Dynamic Graph Convolution for Subcellular Structure Segmentation from Nanoscopy Images, <em>Proc. Fourteenth IAPR International Workshop on Graph-based Representations in Pattern Recognition (GbRPR)</em>, L. Brun et al. (eds.), Springer LNCS Vol. 15727, Caen, France (2025), 68–78.</li>
+        <li>J. Bhattacharya, Z. Zhuo, J. Tohka, A. Sierra and A.S. Chowdhury, Neighbourhood Consistent Brain Cell Instance Segmentation, <em>ICIP Workshop on Computational Optical Microscopy (COMIC)</em>, Tampere, Finland (2026) (accepted).</li>
+      </ol>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <!-- ✏️ EDIT: contact email -->
+    Contact: <a href="mailto:abhimanyus@mnnit.ac.in">abhimanyus@mnnit.ac.in</a>
+  </div>
+</footer>
+
+<script>
+  // Simple tab switching: shows the section whose id matches the URL (#home, #program, …)
+  function showPage() {
+    const pages = [...document.querySelectorAll('.page')];
+    const id = location.hash.slice(1);
+    const target = pages.find(p => p.id === id) || pages[0];
+    pages.forEach(p => p.hidden = p !== target);
+    document.querySelectorAll('nav a').forEach(a =>
+      a.getAttribute('href') === '#' + target.id ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    const t = 'ICVGIP 2026 Tutorial';
+    document.title = t + ' – ' + target.querySelector('h2').textContent;
+  }
+  window.addEventListener('hashchange', () => { showPage(); window.scrollTo(0, 0); });
+  showPage();
+</script>
+</body>
+</html>
